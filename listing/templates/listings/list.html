@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Stays - Airbnb{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-semibold">Available Stays</h2>
+  <a href="{% url 'listings:create' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">New Listing</a>
+</div>
+
+<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+  {% for listing in listings %}
+  <div class="bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer">
+    {% if listing.image %}
+    <img src="{{ listing.image.url }}" alt="{{ listing.title }}" class="h-48 w-full object-cover rounded-t-lg">
+    {% else %}
+    <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
+    {% endif %}
+    <div class="p-4">
+      <h3 class="text-lg font-semibold">{{ listing.title }}</h3>
+      <p class="text-gray-500 text-sm">{{ listing.location }}</p>
+      <p class="mt-2 text-red-600 font-bold">${{ listing.price_per_night }} <span class="text-gray-600 font-normal">/ night</span></p>
+      <a href="{% url 'listings:detail' listing.pk %}" class="mt-4 inline-block text-indigo-600 hover:underline">View Details</a>
+    </div>
+  </div>
+  {% empty %}
+  <p>No listings yet. <a href="{% url 'listings:create' %}" class="text-red-500">Add one?</a></p>
+  {% endfor %}
+</div>
+{% endblock %}

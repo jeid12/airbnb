@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}AirBnb{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-white text-gray-800">          
+
+
+     
+
+  {% include "navbar.html" %}
+
+  <main class="max-w-7xl mx-auto p-4">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+
+  <footer>
+    <div class="max-w-7xl mx-auto p-4">
+        <div class="flex justify-between bg-sky-50 rounded p-4 items-center mb-4">
+            <div>
+            <h2 class="text-lg font-semibold">AirBnb</h2>
+            <p class="text-sm text-gray-600">Your home away from home.</p>
+            </div>
+            <div>
+            <a href="{% url 'listings:list' %}" class="text-sm text-gray-700 hover:text-red-500">Browse Listings</a>
+            </div>
+        </div>
+      <p class="text-center text-gray-600">© 2025 AirBnb. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

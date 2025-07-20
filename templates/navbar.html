@@ -1,0 +1,77 @@
+<!-- Navbar -->
+<nav class="bg-white shadow-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <!-- Logo -->
+      <div class="flex-shrink-0">
+        <a href="{% url 'listings:home' %}" class="text-xl font-bold text-red-500">Airbnb Clone</a>
+      </div>
+
+      <!-- Center Navigation -->
+      <div class="hidden md:flex space-x-6">
+        <a href="{% url 'listings:list' %}" class="text-sm font-medium text-gray-700 hover:text-red-500">Explore</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'listings:create' %}" class="text-sm font-medium text-gray-700 hover:text-red-500">Host a Home</a>
+          <a href="#" class="text-sm font-medium text-gray-700 hover:text-red-500">Dashboard</a>
+        {% endif %}
+      </div>
+
+      <!-- Right Navigation -->
+      <div class="hidden md:flex items-center space-x-4">
+        {% if user.is_authenticated %}
+          <span class="text-sm text-gray-600">Hi, {{ user.username }}</span>
+          <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+  {% csrf_token %}
+  <button type="submit" class="text-sm text-red-600 hover:underline bg-transparent border-none cursor-pointer p-0">
+    Logout
+  </button>
+</form>
+
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="text-sm text-gray-700 hover:text-red-500">Login</a>
+          <a href="#" class="text-sm text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600">Sign Up</a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile menu button -->
+      <div class="md:hidden">
+        <button id="mobile-menu-button" class="text-gray-700 focus:outline-none">
+          <!-- Hamburger icon -->
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>.
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="md:hidden px-4 pb-4 space-y-2 hidden" id="mobile-menu">
+    <a href="{% url 'listings:list' %}" class="block text-sm text-gray-700 hover:text-red-500">Explore</a>
+
+    {% if user.is_authenticated %}
+      <a href="{% url 'listings:create' %}" class="block text-sm text-gray-700 hover:text-red-500">Host a Home</a>
+      <a href="#" class="block text-sm text-gray-700 hover:text-red-500">Dashboard</a>
+      <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+  {% csrf_token %}
+  <button type="submit" class="text-sm text-red-600 hover:underline bg-transparent border-none cursor-pointer p-0">
+    Logout
+  </button>
+</form>
+
+    {% else %}
+      <a href="{% url 'accounts:login' %}" class="block text-sm text-gray-700 hover:text-red-500">Login</a>
+      <a href="#" class="block text-sm text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600">Sign Up</a>
+    {% endif %}
+  </div>
+
+  <!-- Mobile menu toggle script -->
+  <script>
+    document.getElementById("mobile-menu-button").addEventListener("click", function () {
+      var menu = document.getElementById("mobile-menu");
+      menu.classList.toggle("hidden");
+    });
+  </script>
+</nav>
