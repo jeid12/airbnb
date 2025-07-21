@@ -1,0 +1,91 @@
+<!-- accounts/templates/accounts/register.html -->
+{% extends "base.html" %}
+
+{% block title %}Register - Airbnb{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-md">
+  <h2 class="text-3xl font-semibold text-red-600 mb-6 text-center">Create Your Account</h2>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <!-- Username -->
+    <div class="mb-4">
+      <label for="{{ form.username.id_for_label }}" class="block text-gray-700 font-medium mb-1">Username</label>
+      {{ form.username|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.username.errors }}</p>
+    </div>
+
+    <!-- Email -->
+    <div class="mb-4">
+      <label for="{{ form.email.id_for_label }}" class="block text-gray-700 font-medium mb-1">Email</label>
+      {{ form.email|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.email.errors }}</p>
+    </div>
+
+    <!-- First Name -->
+    <div class="mb-4">
+      <label for="{{ form.first_name.id_for_label }}" class="block text-gray-700 font-medium mb-1">First Name</label>
+      {{ form.first_name|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.first_name.errors }}</p>
+    </div>
+
+    <!-- Last Name -->
+    <div class="mb-4">
+      <label for="{{ form.last_name.id_for_label }}" class="block text-gray-700 font-medium mb-1">Last Name</label>
+      {{ form.last_name|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors }}</p>
+    </div>
+
+    <!-- Password -->
+    <div class="mb-4">
+      <label for="{{ form.password.id_for_label }}" class="block text-gray-700 font-medium mb-1">Password</label>
+      {{ form.password|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.password.errors }}</p>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="mb-4">
+      <label for="{{ form.password_confirm.id_for_label }}" class="block text-gray-700 font-medium mb-1">Confirm Password</label>
+      {{ form.password_confirm|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.password_confirm.errors }}</p>
+    </div>
+
+    <!-- Profile Picture -->
+    <div class="mb-4">
+      <label for="{{ form.profile_picture.id_for_label }}" class="block text-gray-700 font-medium mb-1">Profile Picture</label>
+      {{ form.profile_picture|add_class:"w-full" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.profile_picture.errors }}</p>
+    </div>
+
+    <!-- Phone Number -->
+    <div class="mb-4">
+      <label for="{{ form.phone_number.id_for_label }}" class="block text-gray-700 font-medium mb-1">Phone Number</label>
+      {{ form.phone_number|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.phone_number.errors }}</p>
+    </div>
+
+    <!-- Bio -->
+    <div class="mb-4">
+      <label for="{{ form.bio.id_for_label }}" class="block text-gray-700 font-medium mb-1">Bio</label>
+      {{ form.bio|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.bio.errors }}</p>
+    </div>
+
+    <!-- Role -->
+    <div class="mb-6">
+      <label for="{{ form.role.id_for_label }}" class="block text-gray-700 font-medium mb-1">Role</label>
+      {{ form.role|add_class:"w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" }}
+      <p class="text-red-600 text-sm mt-1">{{ form.role.errors }}</p>
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" 
+      class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-md transition duration-300">
+      Register
+    </button>
+  </form>
+</div>
+{% endblock %}
