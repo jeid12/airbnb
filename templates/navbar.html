@@ -29,7 +29,7 @@
 
         {% else %}
           <a href="{% url 'accounts:login' %}" class="text-sm text-gray-700 hover:text-red-500">Login</a>
-          <a href="#" class="text-sm text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600">Sign Up</a>
+          <a href="{% url 'accounts:register' %}" class="text-sm text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600">Sign Up</a>
         {% endif %}
       </div>
 
@@ -63,7 +63,7 @@
 
     {% else %}
       <a href="{% url 'accounts:login' %}" class="block text-sm text-gray-700 hover:text-red-500">Login</a>
-      <a href="#" class="block text-sm text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600">Sign Up</a>
+      <a href="{% url 'accounts:register' %}" class="block text-sm text-white bg-red-500 px-3 py-1 rounded-full hover:bg-red-600">Sign Up</a>
     {% endif %}
   </div>
 

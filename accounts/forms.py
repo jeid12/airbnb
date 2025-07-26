@@ -1,7 +1,7 @@
 
 from django import forms
-from django.contrib.auth.models import User
-from .models import UserProfile
+
+from .models import User
 
 class UserRegistrationForm(forms.ModelForm):
     first_name = forms.CharField(required=True)
@@ -11,7 +11,7 @@ class UserRegistrationForm(forms.ModelForm):
     profile_picture = forms.ImageField(required=False)
     phone_number = forms.CharField(required=False)
     bio = forms.CharField(widget=forms.Textarea, required=False)
-    role = forms.ChoiceField(choices=UserProfile.ROLE_CHOICES)
+    role = forms.ChoiceField(choices=User.ROLE_CHOICES)
 
     class Meta:
         model = User

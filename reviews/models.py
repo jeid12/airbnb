@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
+from  django.conf import settings
 from listing.models import Listing
 
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='reviews')
     rating = models.PositiveIntegerField()
     comment = models.TextField()

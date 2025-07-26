@@ -1,13 +1,16 @@
 <!-- accounts/templates/accounts/register.html -->
 {% extends "base.html" %}
 
+{% load widget_tweaks %}
+
+
 {% block title %}Register - Airbnb{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-md">
   <h2 class="text-3xl font-semibold text-red-600 mb-6 text-center">Create Your Account</h2>
 
-  <form method="post" enctype="multipart/form-data" novalidate>
+  <form method="post" action="{% url 'accounts:register' %}">
     {% csrf_token %}
     {{ form.non_field_errors }}
 

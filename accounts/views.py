@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .forms import UserRegistrationForm
-from .models import UserProfile
+from .models import User
 from django.contrib import messages
 
 # accounts/views.py
@@ -17,7 +17,7 @@ def register(request):
             user.last_name = form.cleaned_data['last_name']
             user.save()
 
-            UserProfile.objects.create(
+            User.objects.create(
                 user=user,
                 profile_picture=form.cleaned_data.get('profile_picture'),
                 phone_number=form.cleaned_data.get('phone_number'),

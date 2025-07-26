@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from listing.models import Listing
 
 BOOKING_STATUS_CHOICES = [
@@ -9,7 +9,7 @@ BOOKING_STATUS_CHOICES = [
 ]
 
 class Booking(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
     check_in = models.DateField()
     check_out = models.DateField()

@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 PROPERTY_TYPE_CHOICES = [
     ('entire_place', 'Entire Place'),
@@ -18,7 +18,7 @@ class Listing(models.Model):
     beds = models.PositiveIntegerField()
     bathrooms = models.PositiveIntegerField()
     image = models.ImageField(upload_to='listings/', null=True, blank=True)
-    host = models.ForeignKey(User, on_delete=models.CASCADE)
+    host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from .forms import ListingForm
 from .models import Listing
@@ -28,6 +30,7 @@ class ListingView(View):
         listings = Listing.objects.filter(is_active=True)
         return render(request, 'listings/list.html', {'listings': listings})
 
+    @method_decorator(login_required)
     def post(self, request, pk=None):
         if pk is None and request.path.endswith('/new/'):
             form = ListingForm(request.POST, request.FILES)
@@ -47,7 +50,7 @@ class ListingView(View):
             return render(request, 'listings/form.html', {'form': form, 'action': 'Edit', 'listing': listing})
 
         return redirect('listings:list')
-
+    @method_decorator(login_required)
     def delete(self, request, pk):
         listing = get_object_or_404(Listing, pk=pk)
         listing.delete()
