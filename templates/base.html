@@ -5,6 +5,8 @@
   <title>{% block title %}Kodesha{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-white text-gray-800">          
@@ -69,10 +71,10 @@
         <div>
           <h4 class="text-lg font-semibold mb-4">Our Partners</h4>
           <ul class="space-y-2 text-sm">
-            <li class="text-gray-300">🚀 Solvit Africa</li>
-            <li class="text-gray-300">🎓 University of Rwanda</li>
-            <li class="text-gray-300">💻 Rwanda Informatics Olympiad</li>
-            <li class="text-gray-300">👨‍🏫 Habimana Jambo Floribert</li>
+            <li><span class="text-gray-300">🚀 Solvit Africa</span></li>
+            <li><span class="text-gray-300">🎓 University of Rwanda</span></li>
+            <li><span class="text-gray-300">💻 Rwanda Informatics Olympiad</span></li>
+            <li><span class="text-gray-300">👨‍🏫 Habimana Jambo Floribert</span></li>
           </ul>
         </div>
 
@@ -80,9 +82,9 @@
         <div>
           <h4 class="text-lg font-semibold mb-4">Support</h4>
           <ul class="space-y-2 text-sm">
-            <li class="text-gray-300">📧 support@lentbnb.rw</li>
-            <li class="text-gray-300">📱 +250 788 123 456</li>
-            <li class="text-gray-300">📍 Kigali, Rwanda</li>
+            <li><span class="text-gray-300">📧 support@lentbnb.rw</span></li>
+            <li><span class="text-gray-300">📱 +250 788 123 456</span></li>
+            <li><span class="text-gray-300">📍 Kigali, Rwanda</span></li>
             <li><a href="#" class="text-gray-300 hover:text-white transition duration-200">Help Center</a></li>
             <li><a href="#" class="text-gray-300 hover:text-white transition duration-200">Terms of Service</a></li>
             <li><a href="#" class="text-gray-300 hover:text-white transition duration-200">Privacy Policy</a></li>
