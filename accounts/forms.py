@@ -1,6 +1,4 @@
-
 from django import forms
-
 from .models import User
 
 class UserRegistrationForm(forms.ModelForm):
@@ -15,7 +13,18 @@ class UserRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'password']
+        fields = [
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'password',
+            'password_confirm',
+            'profile_picture',
+            'phone_number',
+            'bio',
+            'role',
+        ]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -24,3 +33,10 @@ class UserRegistrationForm(forms.ModelForm):
         if pw and pw2 and pw != pw2:
             self.add_error('password_confirm', "Passwords do not match")
         return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])  # Encrypt the password
+        if commit:
+            user.save()
+        return user

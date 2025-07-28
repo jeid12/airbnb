@@ -1,31 +1,30 @@
-
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from .forms import UserRegistrationForm
-from .models import User
 from django.contrib import messages
-
-# accounts/views.py
+from django.contrib.auth import authenticate, login
+from .forms import UserRegistrationForm
 
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.first_name = form.cleaned_data['first_name']
-            user.last_name = form.cleaned_data['last_name']
-            user.save()
+            
+            user=form.save()
 
-            User.objects.create(
-                user=user,
-                profile_picture=form.cleaned_data.get('profile_picture'),
-                phone_number=form.cleaned_data.get('phone_number'),
-                bio=form.cleaned_data.get('bio'),
-                role=form.cleaned_data.get('role'),
-            )
-            messages.success(request, "Account created successfully. Please log in.")
-            return redirect('accounts:login')
+            # Log the user in after successful registration
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, "Registration successful. You are now logged in.")
+                return redirect('listings:home')
+            else:
+                messages.error(request, "Registration successful, but login failed. Please try logging in manually.")
+
+
+
+           
     else:
         form = UserRegistrationForm()
     return render(request, 'register.html', {'form': form})
