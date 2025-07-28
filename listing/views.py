@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from .decolarator import host_required
+from .decolarator import host_required, property_access_required
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import Q
@@ -143,6 +143,7 @@ def search_listings(request):
 
 
 class ListingView(View):
+    @method_decorator(property_access_required)
     def get(self, request, pk=None):
         if pk is None and request.path.endswith('/new/'):
             form = ListingForm()
@@ -155,7 +156,38 @@ class ListingView(View):
 
         if pk is not None:
             listing = get_object_or_404(Listing, pk=pk)
-            return render(request, 'listings/detail.html', {'listing': listing})
+            
+            # Get related listings for guests
+            related_listings = []
+            if request.user.is_authenticated and hasattr(request.user, 'role') and request.user.role == 'guest':
+                # Calculate price range (±30% of current listing price)
+                price_min = float(listing.price_per_night) * 0.7
+                price_max = float(listing.price_per_night) * 1.3
+                
+                # Get related listings based on location and price range
+                related_listings = Listing.objects.filter(
+                    is_active=True,
+                    location__icontains=listing.location.split(',')[0],  # Match by city/area
+                    price_per_night__gte=price_min,
+                    price_per_night__lte=price_max
+                ).exclude(pk=listing.pk).order_by('?')[:4]  # Random order, limit to 4
+                
+                # If we don't have enough related listings, get more based on just location
+                if len(related_listings) < 4:
+                    additional_listings = Listing.objects.filter(
+                        is_active=True,
+                        location__icontains=listing.location.split(',')[0]
+                    ).exclude(
+                        pk__in=[listing.pk] + list(related_listings.values_list('pk', flat=True))
+                    ).order_by('?')[:4-len(related_listings)]
+                    
+                    related_listings = list(related_listings) + list(additional_listings)
+            
+            context = {
+                'listing': listing,
+                'related_listings': related_listings
+            }
+            return render(request, 'listings/detail.html', context)
 
         listings = Listing.objects.filter(is_active=True)
         return render(request, 'listings/list.html', {'listings': listings})

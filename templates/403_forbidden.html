@@ -1,24 +1,76 @@
-{%extends 'base.html'%}
+{% extends 'base.html' %}
 
-{% block title %}403 Forbidden - AirBnb{% endblock %}
+{% block title %}Access Denied - Lent bnb{% endblock %}
 
 {% block content %}
-<section class="flex items-center justify-center h-screen bg-gray-100">
-  <div class="text-center">
-    <h1 class="text-6xl font-bold text-red-600 mb-4">403</h1>
-    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Forbidden</h2>
-    <p class="text-gray-600 mb-6">You do not have permission to access this page.</p>
-    <a href="{% url 'listings:list' %}" class="text-red-500 hover:underline">
-      Go back to listings
-    </a>
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-white py-12 px-4 shadow-lg sm:rounded-lg sm:px-10">
+      <!-- Error Icon -->
+      <div class="flex justify-center mb-6">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Error Title -->
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+        <p class="text-sm text-gray-600 mb-6">
+          As a host, you can only view your own property listings. This property belongs to another host.
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-3">
+        <a href="{% url 'listings:list' %}" 
+           class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          Browse All Listings
+        </a>
+        
+        {% if user.is_authenticated %}
+        <a href="{% url 'listings:create' %}" 
+           class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          Create New Listing
+        </a>
+        {% endif %}
+        
+        <a href="{% url 'listings:home' %}" 
+           class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Go to Homepage
+        </a>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="mt-8 pt-6 border-t border-gray-200">
+        <div class="text-center">
+          <h3 class="text-sm font-medium text-gray-900 mb-2">Why am I seeing this?</h3>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            To protect privacy and maintain security, hosts can only access detailed views of their own properties. 
+            If you need to view other listings, please browse them as a guest or contact support.
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 {% endblock %}
 
 {% block extra_head %}
 <style>
   body {
-    background-color: #f8fafc; /* Tailwind's gray-100 */
-  }          
+    background-color: #f9fafb;
+  }
 </style>
 {% endblock %}

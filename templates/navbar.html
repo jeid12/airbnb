@@ -22,8 +22,12 @@
         
         <a href="{% url 'listings:list' %}" class="text-sm font-medium text-gray-700 hover:text-red-500">Explore</a>
         {% if user.is_authenticated %}
+              {% if request.user.role == 'host'%}
           <a href="{% url 'listings:create' %}" class="text-sm font-medium text-gray-700 hover:text-red-500">Host a Home</a>
+              {% endif %}
+              {% if request.user.role == 'admin' %}
           <a href="#" class="text-sm font-medium text-gray-700 hover:text-red-500">Dashboard</a>
+              {% endif %}
         {% endif %}
       </div>
 
