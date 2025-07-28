@@ -4,11 +4,22 @@
     <div class="flex justify-between h-16 items-center">
       <!-- Logo -->
       <div class="flex-shrink-0">
-        <a href="{% url 'listings:home' %}" class="text-xl font-bold text-red-500">Airbnb Clone</a>
+        <a href="{% url 'listings:home' %}" class="text-xl font-bold text-red-500">Kodesha</a>
       </div>
 
       <!-- Center Navigation -->
-      <div class="hidden md:flex space-x-6">
+      <div class="hidden md:flex items-center space-x-6">
+        <!-- Quick Search Bar -->
+        <form action="{% url 'listings:search' %}" method="get" class="flex items-center">
+          <input type="text" name="q" placeholder="Search..." 
+                 class="px-3 py-1 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 w-64" />
+          <button type="submit" title="Search" class="ml-2 text-red-500 hover:text-red-600">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        </form>
+        
         <a href="{% url 'listings:list' %}" class="text-sm font-medium text-gray-700 hover:text-red-500">Explore</a>
         {% if user.is_authenticated %}
           <a href="{% url 'listings:create' %}" class="text-sm font-medium text-gray-700 hover:text-red-500">Host a Home</a>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Lent bnb{% endblock %}
+{% block title %}Home - Kodesha{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -10,36 +10,306 @@
     <h1 class="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">Find your perfect stay</h1>
     <p class="mb-6 text-lg md:text-xl drop-shadow-md max-w-2xl">Book unique homes and experiences all around the world.</p>
 
-    <!-- Search Bar -->
-    <form action="#" method="get" class="w-full max-w-xl mx-auto flex rounded-md overflow-hidden bg-white shadow-md">
-      <input type="text" name="q" placeholder="Where are you going?" class="flex-grow px-4 py-3 focus:outline-none" />
-      <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-6 font-semibold transition">Search</button>
-    </form>
+    <!-- Enhanced Search Bar -->
+    <div class="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-4">
+      <form action="{% url 'listings:search' %}" method="get" class="space-y-4">
+        <!-- Main Search Row -->
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-grow">
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Where are you going?" 
+                   class="w-full px-4 py-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800" />
+          </div>
+          <div class="md:w-48">
+            <select name="guests" title="Number of guests" class="w-full px-4 py-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800">
+              <option value="">Any guests</option>
+              {% for i in "123456789"|make_list %}
+                <option value="{{ i }}" {% if guests == i %}selected{% endif %}>{{ i }} guest{{ i|pluralize }}</option>
+              {% endfor %}
+              <option value="10" {% if guests == "10" %}selected{% endif %}>10+ guests</option>
+            </select>
+          </div>
+          <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-md font-semibold transition duration-200">
+            Search
+          </button>
+        </div>
+
+        <!-- Advanced Filters Row -->
+        <div class="flex flex-col md:flex-row gap-4 pt-2 border-t border-gray-200">
+          <div class="flex-1">
+            <select name="property_type" title="Property type" class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800">
+              <option value="">Any type</option>
+              {% for value, label in property_type_choices %}
+                <option value="{{ value }}" {% if selected_property_type == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="flex-1">
+            <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min price" 
+                   class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800" />
+          </div>
+          <div class="flex-1">
+            <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max price" 
+                   class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800" />
+          </div>
+          {% if is_search %}
+          <div class="flex-shrink-0">
+            <a href="{% url 'listings:home' %}" class="inline-block bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md font-medium transition duration-200">
+              Clear
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </form>
+    </div>
   </div>
 </section>
 
-<!-- Featured Listings -->
+<!-- Search Results or Featured Listings -->
 <section>
-  <h2 class="text-2xl font-semibold mb-6">Featured Listings</h2>
+  {% if is_search %}
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-semibold">
+        Search Results 
+        {% if search_query %}for "{{ search_query }}"{% endif %}
+        <span class="text-gray-500 font-normal">({{ listings|length }} found)</span>
+      </h2>
+    </div>
+  {% else %}
+    <h2 class="text-2xl font-semibold mb-6">Featured Listings</h2>
+  {% endif %}
+
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
     {% for listing in listings %}
-    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer">
-      {% if listing.image %}
-        <img src="{{ listing.image.url }}" alt="{{ listing.title }}" class="h-48 w-full object-cover" />
-      {% else %}
-        <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-400">
-          No Image
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer">
+      <a href="{% url 'listings:detail' listing.pk %}" class="block">
+        {% if listing.image %}
+          <img src="{{ listing.image.url }}" alt="{{ listing.title }}" class="h-48 w-full object-cover" />
+        {% else %}
+          <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-400">
+            No Image
+          </div>
+        {% endif %}
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-1 truncate">{{ listing.title }}</h3>
+          <p class="text-gray-500 text-sm mb-2 truncate">{{ listing.location }}</p>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{{ listing.get_property_type_display }}</span>
+            <span class="text-xs text-gray-500">{{ listing.guests }} guest{{ listing.guests|pluralize }}</span>
+          </div>
+          <p class="text-red-600 font-bold">${{ listing.price_per_night }} <span class="text-gray-600 font-normal">/ night</span></p>
         </div>
-      {% endif %}
-      <div class="p-4">
-        <h3 class="text-lg font-semibold mb-1">{{ listing.title }}</h3>
-        <p class="text-gray-500 text-sm mb-2">{{ listing.location }}</p>
-        <p class="text-red-600 font-bold">${{ listing.price_per_night }} <span class="text-gray-600 font-normal">/ night</span></p>
-      </div>
+      </a>
     </div>
     {% empty %}
-    <p>No listings available right now.</p>
+    <div class="col-span-full text-center py-12">
+      {% if is_search %}
+        <div class="text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <h3 class="text-lg font-medium mb-2">No listings found</h3>
+          <p class="mb-4">Try adjusting your search criteria or browse all listings.</p>
+          <a href="{% url 'listings:home' %}" class="inline-block bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-medium transition duration-200">
+            View All Listings
+          </a>
+        </div>
+      {% else %}
+        <p class="text-gray-500">No listings available right now.</p>
+      {% endif %}
+    </div>
     {% endfor %}
+  </div>
+
+  <!-- Load More Button for Search Results -->
+  {% if is_search and listings|length >= 12 %}
+  <div class="text-center mt-8">
+    <button class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-md font-medium transition duration-200">
+      Load More Results
+    </button>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Organizations & Support Section -->
+<section class="bg-gray-50 py-16 mt-16">
+  <div class="max-w-7xl mx-auto px-4">
+    <!-- Section Header -->
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">Trusted by Leading Organizations</h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Our platform is supported by prestigious institutions and educational organizations across Rwanda and Africa.
+      </p>
+    </div>
+
+    <!-- Organizations Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+      <!-- Solvit Africa -->
+      <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300 text-center">
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Solvit Africa</h3>
+        <p class="text-gray-600 text-sm">
+          Leading technology solutions provider empowering African businesses with innovative digital transformation services.
+        </p>
+      </div>
+
+      <!-- University of Rwanda -->
+      <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300 text-center">
+        <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">University of Rwanda</h3>
+        <p class="text-gray-600 text-sm">
+          Rwanda's premier public university fostering excellence in education, research, and innovation for sustainable development.
+        </p>
+      </div>
+
+      <!-- Rwanda Informatics Olympiad -->
+      <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300 text-center">
+        <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Rwanda Informatics Olympiad</h3>
+        <p class="text-gray-600 text-sm">
+          Promoting computational thinking and programming excellence among Rwandan students through competitive programming.
+        </p>
+      </div>
+
+      <!-- Lecturer Support -->
+      <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300 text-center">
+        <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Academic Excellence</h3>
+        <p class="text-gray-600 text-sm">
+          Under the guidance of <strong>Habimana Jambo Floribert</strong>, dedicated to fostering next-generation technology leaders.
+        </p>
+      </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+      <div class="bg-white rounded-lg p-6 shadow-md">
+        <div class="text-3xl font-bold text-red-500 mb-2">500+</div>
+        <div class="text-gray-600 font-medium">Students Supported</div>
+      </div>
+      <div class="bg-white rounded-lg p-6 shadow-md">
+        <div class="text-3xl font-bold text-blue-500 mb-2">50+</div>
+        <div class="text-gray-600 font-medium">Projects Completed</div>
+      </div>
+      <div class="bg-white rounded-lg p-6 shadow-md">
+        <div class="text-3xl font-bold text-green-500 mb-2">15+</div>
+        <div class="text-gray-600 font-medium">Partner Organizations</div>
+      </div>
+      <div class="bg-white rounded-lg p-6 shadow-md">
+        <div class="text-3xl font-bold text-purple-500 mb-2">98%</div>
+        <div class="text-gray-600 font-medium">Satisfaction Rate</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">What Our Community Says</h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Hear from students, educators, and professionals who have benefited from our platform.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Testimonial 1 -->
+      <div class="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-lg transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+            S
+          </div>
+          <div class="ml-4">
+            <h4 class="font-semibold text-gray-900">Sarah Uwimana</h4>
+            <p class="text-sm text-gray-600">Computer Science Student</p>
+          </div>
+        </div>
+        <p class="text-gray-700 italic">
+          "The platform has revolutionized how I approach learning. The support from Solvit Africa and our university has been incredible."
+        </p>
+      </div>
+
+      <!-- Testimonial 2 -->
+      <div class="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-lg transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+            J
+          </div>
+          <div class="ml-4">
+            <h4 class="font-semibold text-gray-900">Jean Baptiste</h4>
+            <p class="text-sm text-gray-600">Olympiad Participant</p>
+          </div>
+        </div>
+        <p class="text-gray-700 italic">
+          "Thanks to the Rwanda Informatics Olympiad and this platform, I've improved my programming skills tremendously."
+        </p>
+      </div>
+
+      <!-- Testimonial 3 -->
+      <div class="bg-gray-50 rounded-xl p-6 shadow-md hover:shadow-lg transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+            M
+          </div>
+          <div class="ml-4">
+            <h4 class="font-semibold text-gray-900">Marie Claire</h4>
+            <p class="text-sm text-gray-600">Tech Professional</p>
+          </div>
+        </div>
+        <p class="text-gray-700 italic">
+          "The mentorship from Habimana Jambo Floribert and the collaborative environment has shaped my career in technology."
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="bg-gradient-to-r from-red-500 to-red-600 py-16">
+  <div class="max-w-4xl mx-auto text-center px-4">
+    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+      Ready to Join Our Community?
+    </h2>
+    <p class="text-xl text-red-100 mb-8 leading-relaxed">
+      Whether you're a student, educator, or professional, discover amazing opportunities and connect with like-minded individuals.
+    </p>
+    <div class="space-y-4 md:space-y-0 md:space-x-4 md:flex md:justify-center">
+      {% if not user.is_authenticated %}
+      <a href="{% url 'accounts:register' %}" 
+         class="inline-block bg-white text-red-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition duration-200 shadow-lg">
+        Get Started Today
+      </a>
+      <a href="{% url 'listings:list' %}" 
+         class="inline-block border-2 border-white text-white font-semibold px-8 py-3 rounded-lg hover:bg-white hover:text-red-600 transition duration-200">
+        Explore Listings
+      </a>
+      {% else %}
+      <a href="{% url 'listings:create' %}" 
+         class="inline-block bg-white text-red-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition duration-200 shadow-lg">
+        List Your Property
+      </a>
+      <a href="{% url 'listings:list' %}" 
+         class="inline-block border-2 border-white text-white font-semibold px-8 py-3 rounded-lg hover:bg-white hover:text-red-600 transition duration-200">
+        Browse Listings
+      </a>
+      {% endif %}
+    </div>
   </div>
 </section>
 {% endblock %}

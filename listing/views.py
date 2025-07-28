@@ -3,13 +3,142 @@ from django.views import View
 from .decolarator import host_required
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.db.models import Q
 
 from .forms import ListingForm
 from .models import Listing
 
 def home(request):
-    listings = Listing.objects.all()[:6]  
-    return render(request, 'index.html', {'listings': listings})
+    listings = Listing.objects.filter(is_active=True)
+    
+    # Search functionality
+    query = request.GET.get('q', '').strip()
+    property_type = request.GET.get('property_type', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    guests = request.GET.get('guests', '')
+    
+    # Filter by search query (location, title, description)
+    if query:
+        listings = listings.filter(
+            Q(location__icontains=query) |
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+        )
+    
+    # Filter by property type
+    if property_type:
+        listings = listings.filter(property_type=property_type)
+    
+    # Filter by price range
+    if min_price:
+        try:
+            listings = listings.filter(price_per_night__gte=float(min_price))
+        except ValueError:
+            pass
+    
+    if max_price:
+        try:
+            listings = listings.filter(price_per_night__lte=float(max_price))
+        except ValueError:
+            pass
+    
+    # Filter by guest capacity
+    if guests:
+        try:
+            listings = listings.filter(guests__gte=int(guests))
+        except ValueError:
+            pass
+    
+    # If no search parameters are provided, show only featured listings (first 6)
+    if not any([query, property_type, min_price, max_price, guests]):
+        listings = listings[:6]
+    
+    # Get property type choices for the filter dropdown
+    from .models import PROPERTY_TYPE_CHOICES
+    
+    context = {
+        'listings': listings,
+        'property_type_choices': PROPERTY_TYPE_CHOICES,
+        'search_query': query,
+        'selected_property_type': property_type,
+        'min_price': min_price,
+        'max_price': max_price,
+        'guests': guests,
+        'is_search': any([query, property_type, min_price, max_price, guests])
+    }
+    
+    return render(request, 'index.html', context)
+
+def search_listings(request):
+    """Dedicated search page with advanced filtering"""
+    listings = Listing.objects.filter(is_active=True)
+    
+    # Search functionality
+    query = request.GET.get('q', '').strip()
+    property_type = request.GET.get('property_type', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    guests = request.GET.get('guests', '')
+    sort_by = request.GET.get('sort', 'newest')
+    
+    # Filter by search query (location, title, description)
+    if query:
+        listings = listings.filter(
+            Q(location__icontains=query) |
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+        )
+    
+    # Filter by property type
+    if property_type:
+        listings = listings.filter(property_type=property_type)
+    
+    # Filter by price range
+    if min_price:
+        try:
+            listings = listings.filter(price_per_night__gte=float(min_price))
+        except ValueError:
+            pass
+    
+    if max_price:
+        try:
+            listings = listings.filter(price_per_night__lte=float(max_price))
+        except ValueError:
+            pass
+    
+    # Filter by guest capacity
+    if guests:
+        try:
+            listings = listings.filter(guests__gte=int(guests))
+        except ValueError:
+            pass
+    
+    # Apply sorting
+    if sort_by == 'price_low':
+        listings = listings.order_by('price_per_night')
+    elif sort_by == 'price_high':
+        listings = listings.order_by('-price_per_night')
+    elif sort_by == 'guests':
+        listings = listings.order_by('-guests')
+    else:  # newest or default
+        listings = listings.order_by('-created_at')
+    
+    # Get property type choices for the filter dropdown
+    from .models import PROPERTY_TYPE_CHOICES
+    
+    context = {
+        'listings': listings,
+        'property_type_choices': PROPERTY_TYPE_CHOICES,
+        'search_query': query,
+        'selected_property_type': property_type,
+        'min_price': min_price,
+        'max_price': max_price,
+        'guests': guests,
+        'sort_by': sort_by,
+    }
+    
+    return render(request, 'listings/search_results.html', context)
 
 
 

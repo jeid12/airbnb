@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - Lent bnb{% endblock %}
+
+{% block content %}
+<!-- Search Header -->
+<section class="bg-gray-50 py-8 mb-8">
+  <div class="container mx-auto px-4">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-4">
+        Search Results 
+        {% if search_query %}for "{{ search_query }}"{% endif %}
+      </h1>
+      
+      <!-- Search Form -->
+      <div class="bg-white rounded-lg shadow-md p-4">
+        <form action="{% url 'listings:search' %}" method="get" class="space-y-4">
+          <!-- Main Search Row -->
+          <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-grow">
+              <input type="text" name="q" value="{{ search_query }}" placeholder="Where are you going?" 
+                     class="w-full px-4 py-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" />
+            </div>
+            <div class="md:w-48">
+              <select name="guests" title="Number of guests" class="w-full px-4 py-3 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                <option value="">Any guests</option>
+                {% for i in "123456789"|make_list %}
+                  <option value="{{ i }}" {% if guests == i %}selected{% endif %}>{{ i }} guest{{ i|pluralize }}</option>
+                {% endfor %}
+                <option value="10" {% if guests == "10" %}selected{% endif %}>10+ guests</option>
+              </select>
+            </div>
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-md font-semibold transition duration-200">
+              Search
+            </button>
+          </div>
+
+          <!-- Advanced Filters Row -->
+          <div class="flex flex-col md:flex-row gap-4 pt-2 border-t border-gray-200">
+            <div class="flex-1">
+              <select name="property_type" title="Property type" class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                <option value="">Any type</option>
+                {% for value, label in property_type_choices %}
+                  <option value="{{ value }}" {% if selected_property_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="flex-1">
+              <input type="number" name="min_price" value="{{ min_price }}" placeholder="Min price" 
+                     class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" />
+            </div>
+            <div class="flex-1">
+              <input type="number" name="max_price" value="{{ max_price }}" placeholder="Max price" 
+                     class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" />
+            </div>
+            <div class="flex-shrink-0">
+              <a href="{% url 'listings:search' %}" class="inline-block bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md font-medium transition duration-200">
+                Clear
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Results Section -->
+<section class="container mx-auto px-4">
+  <div class="flex justify-between items-center mb-6">
+    <p class="text-gray-600">{{ listings|length }} listing{{ listings|length|pluralize }} found</p>
+    
+    <!-- Sort Options -->
+    <div class="flex items-center space-x-4">
+      <label for="sort" class="text-sm font-medium text-gray-700">Sort by:</label>
+      <select id="sort" name="sort" class="px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" onchange="updateSort()">
+        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest first</option>
+        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+        <option value="guests" {% if sort_by == 'guests' %}selected{% endif %}>Guest capacity</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for listing in listings %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+      <a href="{% url 'listings:detail' listing.pk %}" class="block">
+        {% if listing.image %}
+          <img src="{{ listing.image.url }}" alt="{{ listing.title }}" class="h-48 w-full object-cover" />
+        {% else %}
+          <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-400">
+            <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        {% endif %}
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-1 truncate">{{ listing.title }}</h3>
+          <p class="text-gray-500 text-sm mb-2 truncate">{{ listing.location }}</p>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{{ listing.get_property_type_display }}</span>
+            <span class="text-xs text-gray-500">{{ listing.guests }} guest{{ listing.guests|pluralize }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <p class="text-red-600 font-bold">${{ listing.price_per_night }} <span class="text-gray-600 font-normal text-sm">/ night</span></p>
+            <div class="flex items-center">
+              <span class="text-xs text-gray-500">{{ listing.bedrooms }} bed{{ listing.bedrooms|pluralize }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-16">
+      <div class="text-gray-500">
+        <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <h3 class="text-xl font-medium mb-4">No listings found</h3>
+        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+          We couldn't find any listings matching your search criteria. Try adjusting your filters or search terms.
+        </p>
+        <div class="space-x-4">
+          <a href="{% url 'listings:search' %}" class="inline-block bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-md font-medium transition duration-200">
+            Clear Filters
+          </a>
+          <a href="{% url 'listings:home' %}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded-md font-medium transition duration-200">
+            View All Listings
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination would go here if needed -->
+  {% if listings|length >= 20 %}
+  <div class="text-center mt-12">
+    <nav class="inline-flex rounded-md shadow">
+      <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+        Previous
+      </a>
+      <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-900">
+        1
+      </a>
+      <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+        2
+      </a>
+      <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+        Next
+      </a>
+    </nav>
+  </div>
+  {% endif %}
+</section>
+
+<script>
+function updateSort() {
+  const sortSelect = document.getElementById('sort');
+  const sortValue = sortSelect.value;
+  
+  // Get current URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  urlParams.set('sort', sortValue);
+  
+  // Reload page with new sort parameter
+  window.location.search = urlParams.toString();
+}
+</script>
+{% endblock %}
