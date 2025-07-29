@@ -11,9 +11,9 @@ from decimal import Decimal
 from .models import Booking, Payment
 
 # PayPal Settings for Development
-PAYPAL_CLIENT_ID = "test"  # Replace with your PayPal Client ID
-PAYPAL_CLIENT_SECRET = "test"  # Replace with your PayPal Client Secret
-PAYPAL_BASE_URL = "https://api-m.sandbox.paypal.com"  # Sandbox URL
+PAYPAL_CLIENT_ID = getattr(settings, 'PAYPAL_CLIENT_ID', 'test')
+PAYPAL_CLIENT_SECRET = getattr(settings, 'PAYPAL_CLIENT_SECRET', 'test')
+PAYPAL_BASE_URL = getattr(settings, 'PAYPAL_SANDBOX_URL', 'https://api-m.sandbox.paypal.com')
 
 def get_paypal_access_token():
     """Get PayPal access token for API requests"""

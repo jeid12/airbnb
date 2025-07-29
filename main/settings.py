@@ -138,3 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files (uploads)
 MEDIA_URL = '/media/'                 # URL prefix for media files
 MEDIA_ROOT = BASE_DIR / 'media'       # Directory where uploaded files will be stored
+
+# PayPal Configuration
+PAYPAL_CLIENT_ID = 'ATbQxcTyww2PSjKN1cz4bSTNX44zCArxGplF4RPVuh3qODTm_HIk6fQjYzHOr_MTlAZVHdL2GYDinE22'
+PAYPAL_CLIENT_SECRET = 'your-paypal-client-secret'  # Add your client secret here
+PAYPAL_SANDBOX_URL = 'https://api-m.sandbox.paypal.com'  # Sandbox environment
