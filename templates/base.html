@@ -109,5 +109,20 @@
     </div>
   </footer>
 
+  <script src="https://www.datadoghq-browser-agent.com/datadog-rum.js"></script>
+<script>
+    window.DD_RUM && window.DD_RUM.init({
+        applicationId: 'YOUR_APP_ID',
+        clientToken: 'YOUR_CLIENT_TOKEN',
+        site: 'datadoghq.com',
+        service: 'django_app',  
+        env: 'production',
+        version: '1.0.0',
+        sampleRate: 100,
+        trackInteractions: true,
+    });
+</script>
+
+
 </body>
 </html>

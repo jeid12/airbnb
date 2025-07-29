@@ -140,7 +140,7 @@
 </div>
 
 <!-- Include the PayPal JavaScript SDK -->
-<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=ATbQxcTyww2PSjKN1cz4bSTNX44zCArxGplF4RPVuh3qODTm_HIk6fQjYzHOr_MTlAZVHdL2GYDinE22&currency=USD"></script>
 
 <script>
 // PayPal Integration
@@ -158,7 +158,7 @@ paypal.Buttons({
                 'X-CSRFToken': '{{ csrf_token }}',
             },
             body: JSON.stringify({
-                booking_id: {{ booking.id }}
+                booking_id: "{{ booking.id }}"
             })
         }).then(function(response) {
             return response.json();

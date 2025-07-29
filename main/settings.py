@@ -141,5 +141,5 @@ MEDIA_ROOT = BASE_DIR / 'media'       # Directory where uploaded files will be s
 
 # PayPal Configuration
 PAYPAL_CLIENT_ID = 'ATbQxcTyww2PSjKN1cz4bSTNX44zCArxGplF4RPVuh3qODTm_HIk6fQjYzHOr_MTlAZVHdL2GYDinE22'
-PAYPAL_CLIENT_SECRET = 'your-paypal-client-secret'  # Add your client secret here
-PAYPAL_SANDBOX_URL = 'https://api-m.sandbox.paypal.com'  # Sandbox environment
+PAYPAL_CLIENT_SECRET = 'EPbNc_2CQUce10Lo4BLTVY31v16ae8LDdk2K-gb129G7A4IM5fgyH3JdamKpHYrfJKeTMeHHE-AP--Ks' 
+PAYPAL_SANDBOX_URL = 'https://sandbox.paypal.com'

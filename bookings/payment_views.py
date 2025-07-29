@@ -13,7 +13,7 @@ from .models import Booking, Payment
 # PayPal Settings for Development
 PAYPAL_CLIENT_ID = getattr(settings, 'PAYPAL_CLIENT_ID', 'test')
 PAYPAL_CLIENT_SECRET = getattr(settings, 'PAYPAL_CLIENT_SECRET', 'test')
-PAYPAL_BASE_URL = getattr(settings, 'PAYPAL_SANDBOX_URL', 'https://api-m.sandbox.paypal.com')
+PAYPAL_BASE_URL = getattr(settings, 'PAYPAL_SANDBOX_URL', 'https://sandbox.paypal.com')
 
 def get_paypal_access_token():
     """Get PayPal access token for API requests"""
