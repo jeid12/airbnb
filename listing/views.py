@@ -3,7 +3,7 @@ from django.views import View
 from .decolarator import host_required, property_access_required
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.utils import timezone
 
 from .forms import ListingForm
@@ -184,10 +184,21 @@ class ListingView(View):
                     
                     related_listings = list(related_listings) + list(additional_listings)
             
+            # Get reviews for this listing
+            from reviews.models import Review
+            reviews = Review.objects.filter(listing=listing).select_related('user').order_by('-created_at')
+            
+            # Calculate average rating
+            average_rating = 0
+            if reviews.exists():
+                average_rating = reviews.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
+            
             context = {
                 'listing': listing,
                 'related_listings': related_listings,
-                'today_date': timezone.now().date()
+                'today_date': timezone.now().date(),
+                'reviews': reviews,
+                'average_rating': average_rating,
             }
             return render(request, 'listings/detail.html', context)
 

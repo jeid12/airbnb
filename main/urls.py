@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('listing.urls', namespace='listing')),
     path('accounts/', include('accounts.urls')),
     path('bookings/', include('bookings.urls', namespace='bookings')),
+    path('reviews/', include('reviews.urls', namespace='reviews')),
 ]
 
 if settings.DEBUG:

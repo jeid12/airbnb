@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+            <li><a href="{% url 'listing:home' %}" class="hover:text-blue-600">Home</a></li>
+            <li>/</li>
+            <li><a href="{% url 'bookings:my_bookings' %}" class="hover:text-blue-600">My Bookings</a></li>
+            <li>/</li>
+            <li><a href="{% url 'bookings:booking_detail' booking_id=booking.id %}" class="hover:text-blue-600">{{ booking.booking_reference }}</a></li>
+            <li>/</li>
+            <li class="text-gray-900">Write Review</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-green-600 to-green-700 text-white p-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-star text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold mb-2">Write a Review</h1>
+                <p class="text-green-100">Share your experience with other guests</p>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <!-- Property Summary -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                <h2 class="text-lg font-semibold mb-4">Your Stay</h2>
+                <div class="flex items-start space-x-4">
+                    {% if listing.image %}
+                        <img src="{{ listing.image.url }}" alt="{{ listing.title }}" 
+                             class="w-20 h-20 object-cover rounded-lg">
+                    {% endif %}
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900">{{ listing.title }}</h3>
+                        <p class="text-gray-600 text-sm mt-1">
+                            <i class="fas fa-map-marker-alt mr-1"></i>{{ listing.location }}
+                        </p>
+                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                            <span>{{ booking.check_in|date:"M d" }} - {{ booking.check_out|date:"M d, Y" }}</span>
+                            <span>{{ booking.guests }} guest{{ booking.guests|pluralize }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Rating Section -->
+                <div>
+                    <label class="block text-lg font-medium text-gray-900 mb-4">
+                        How would you rate your stay? *
+                    </label>
+                    
+                    <div class="flex items-center space-x-1" id="star-rating">
+                        {% for i in "12345" %}
+                            <label class="cursor-pointer">
+                                <input type="radio" name="rating" value="{{ i }}" class="sr-only" required>
+                                <i class="fas fa-star text-3xl text-gray-300 hover:text-yellow-400 transition-colors duration-200" data-rating="{{ i }}"></i>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Click on a star to rate</p>
+                    
+                    {% if form.rating.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.rating.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Comment Section -->
+                <div>
+                    <label for="{{ form.comment.id_for_label }}" class="block text-lg font-medium text-gray-900 mb-2">
+                        Tell us about your experience *
+                    </label>
+                    {{ form.comment }}
+                    <p class="text-sm text-gray-600 mt-2">{{ form.comment.help_text }}</p>
+                    
+                    {% if form.comment.errors %}
+                        <div class="text-red-600 text-sm mt-2">{{ form.comment.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="p-3 bg-red-100 border border-red-300 rounded-md">
+                        {% for error in form.non_field_errors %}
+                            <p class="text-red-600 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Submit Buttons -->
+                <div class="flex space-x-4 pt-6">
+                    <button type="submit" 
+                            class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit Review
+                    </button>
+                    
+                    <a href="{% url 'bookings:booking_detail' booking_id=booking.id %}" 
+                       class="bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+
+            <!-- Review Guidelines -->
+            <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 class="font-semibold text-blue-900 mb-3">
+                    <i class="fas fa-lightbulb mr-2"></i>Review Guidelines
+                </h4>
+                <ul class="text-blue-800 text-sm space-y-1">
+                    <li>• Be honest and specific about your experience</li>
+                    <li>• Focus on the property, cleanliness, and host communication</li>
+                    <li>• Keep your review respectful and constructive</li>
+                    <li>• Mention any issues that affected your stay</li>
+                    <li>• Help other guests make informed decisions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('#star-rating i');
+    const radioButtons = document.querySelectorAll('input[name="rating"]');
+    
+    // Handle star hover
+    stars.forEach((star, index) => {
+        star.addEventListener('mouseenter', function() {
+            highlightStars(index + 1);
+        });
+        
+        star.addEventListener('click', function() {
+            const rating = parseInt(star.getAttribute('data-rating'));
+            radioButtons[rating - 1].checked = true;
+            setStarRating(rating);
+        });
+    });
+    
+    // Handle container mouse leave
+    document.getElementById('star-rating').addEventListener('mouseleave', function() {
+        const checkedRadio = document.querySelector('input[name="rating"]:checked');
+        if (checkedRadio) {
+            setStarRating(parseInt(checkedRadio.value));
+        } else {
+            resetStars();
+        }
+    });
+    
+    function highlightStars(rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.remove('text-gray-300');
+                star.classList.add('text-yellow-400');
+            } else {
+                star.classList.remove('text-yellow-400');
+                star.classList.add('text-gray-300');
+            }
+        });
+    }
+    
+    function setStarRating(rating) {
+        highlightStars(rating);
+    }
+    
+    function resetStars() {
+        stars.forEach(star => {
+            star.classList.remove('text-yellow-400');
+            star.classList.add('text-gray-300');
+        });
+    }
+});
+</script>
+{% endblock %}
