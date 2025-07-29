@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Received Bookings</h1>
+            <p class="text-gray-600 mt-2">Manage bookings for your properties</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <form method="get" class="flex flex-wrap gap-4 items-end">
+            <!-- Search -->
+            <div class="flex-1 min-w-64">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <input type="text" id="search" name="search" value="{{ search_query }}"
+                       placeholder="Search by guest name, property, or booking reference..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select id="status" name="status" 
+                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Bookings</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+            
+            <!-- Filter Button -->
+            <button type="submit" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-filter mr-2"></i>Filter
+            </button>
+            
+            <!-- Clear Button -->
+            <a href="{% url 'bookings:host_bookings' %}" 
+               class="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <i class="fas fa-times mr-2"></i>Clear
+            </a>
+        </form>
+    </div>
+
+    <!-- Bookings List -->
+    {% if page_obj.object_list %}
+        <div class="space-y-6">
+            {% for booking in page_obj.object_list %}
+                <div class="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-start space-x-4">
+                                {% if booking.listing.image %}
+                                    <img src="{{ booking.listing.image.url }}" alt="{{ booking.listing.title }}" 
+                                         class="w-24 h-24 object-cover rounded-lg">
+                                {% else %}
+                                    <div class="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-home text-gray-400 text-2xl"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-1">{{ booking.listing.title }}</h3>
+                                    <p class="text-gray-600 mb-2">
+                                        <i class="fas fa-user mr-2"></i>Guest: {{ booking.user.first_name|default:booking.user.username }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">Booking Reference: {{ booking.booking_reference }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-2
+                                    {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                    {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif booking.status == 'cancelled' %}bg-red-100 text-red-800
+                                    {% elif booking.status == 'completed' %}bg-blue-100 text-blue-800
+                                    {% endif %}">
+                                    {% if booking.status == 'confirmed' %}
+                                        <i class="fas fa-check-circle mr-1"></i>Confirmed
+                                    {% elif booking.status == 'pending' %}
+                                        <i class="fas fa-clock mr-1"></i>Pending
+                                    {% elif booking.status == 'cancelled' %}
+                                        <i class="fas fa-times-circle mr-1"></i>Cancelled
+                                    {% elif booking.status == 'completed' %}
+                                        <i class="fas fa-flag-checkered mr-1"></i>Completed
+                                    {% endif %}
+                                </div>
+                                <div class="text-lg font-bold text-gray-900">${{ booking.total_price }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <div class="text-sm text-gray-600">Check-in</div>
+                                <div class="font-medium text-gray-900">{{ booking.check_in|date:"M d, Y" }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">Check-out</div>
+                                <div class="font-medium text-gray-900">{{ booking.check_out|date:"M d, Y" }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">Duration</div>
+                                <div class="font-medium text-gray-900">{{ booking.nights }} night{{ booking.nights|pluralize }}</div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-600">Guests</div>
+                                <div class="font-medium text-gray-900">{{ booking.guests }} guest{{ booking.guests|pluralize }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Special Requests -->
+                        {% if booking.special_requests %}
+                            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="text-sm font-medium text-blue-900 mb-1">Special Requests:</div>
+                                <div class="text-sm text-blue-800">{{ booking.special_requests }}</div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="flex items-center justify-between pt-4 border-t">
+                            <div class="text-sm text-gray-500">
+                                Booked on {{ booking.created_at|date:"F d, Y" }}
+                            </div>
+                            
+                            <div class="flex items-center space-x-3">
+                                <a href="{% url 'bookings:booking_detail' booking_id=booking.id %}" 
+                                   class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <i class="fas fa-eye mr-2"></i>View Details
+                                </a>
+                                
+                                {% if booking.status == 'pending' %}
+                                    <a href="{% url 'bookings:confirm_booking' booking_id=booking.id %}" 
+                                       class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <i class="fas fa-check mr-2"></i>Confirm
+                                    </a>
+                                {% endif %}
+                                
+                                <!-- Contact Guest -->
+                                <a href="mailto:{{ booking.user.email }}" 
+                                   class="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    <i class="fas fa-envelope mr-2"></i>Contact
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="mt-8 flex justify-center">
+                <nav class="flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}" 
+                           class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="px-3 py-2 bg-blue-600 text-white rounded-md text-sm">{{ num }}</span>
+                        {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}" 
+                               class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter != 'all' %}&status={{ status_filter }}{% endif %}" 
+                           class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-calendar-times text-gray-400 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No bookings found</h3>
+                <p class="text-gray-600 mb-6">
+                    {% if search_query or status_filter != 'all' %}
+                        No bookings match your current filters. Try adjusting your search criteria.
+                    {% else %}
+                        You haven't received any bookings yet. Make sure your properties are listed and available!
+                    {% endif %}
+                </p>
+                <div class="space-x-4">
+                    <a href="{% url 'listing:home' %}" 
+                       class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-home mr-2"></i>View Properties
+                    </a>
+                    {% if search_query or status_filter != 'all' %}
+                        <a href="{% url 'bookings:host_bookings' %}" 
+                           class="bg-gray-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fas fa-times mr-2"></i>Clear Filters
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+            <li><a href="{% url 'listing:home' %}" class="hover:text-blue-600">Home</a></li>
+            <li>/</li>
+            <li><a href="{% url 'listing:detail' pk=listing.id %}" class="hover:text-blue-600">{{ listing.title }}</a></li>
+            <li>/</li>
+            <li class="text-gray-900">Book Now</li>
+        </ol>
+    </nav>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Listing Summary -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                {% if listing.image %}
+                    <img src="{{ listing.image.url }}" alt="{{ listing.title }}" 
+                         class="w-full h-64 object-cover">
+                {% endif %}
+                
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ listing.title }}</h1>
+                    <p class="text-gray-600 mb-4">
+                        <i class="fas fa-map-marker-alt mr-2"></i>{{ listing.location }}
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-users mr-2"></i>{{ listing.guests }} guests
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-bed mr-2"></i>{{ listing.bedrooms }} bedrooms
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-bed mr-2"></i>{{ listing.beds }} beds
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-bath mr-2"></i>{{ listing.bathrooms }} bathrooms
+                        </div>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <div class="text-2xl font-bold text-gray-900">
+                            ${{ listing.price_per_night }}/night
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Host Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Hosted by {{ listing.host.first_name|default:listing.host.username }}</h3>
+                <div class="flex items-center space-x-4">
+                    {% if listing.host.profile_picture %}
+                        <img src="{{ listing.host.profile_picture.url }}" alt="{{ listing.host.username }}" 
+                             class="w-12 h-12 rounded-full object-cover">
+                    {% else %}
+                        <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600"></i>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <div class="font-medium text-gray-900">{{ listing.host.first_name|default:listing.host.username }}</div>
+                        {% if listing.host.bio %}
+                            <div class="text-sm text-gray-600">{{ listing.host.bio|truncatewords:15 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Complete Your Booking</h2>
+                
+                <form method="post" id="booking-form">
+                    {% csrf_token %}
+                    
+                    <!-- Date Selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label for="{{ form.check_in.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Check-in
+                            </label>
+                            {{ form.check_in }}
+                            {% if form.check_in.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.check_in.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <label for="{{ form.check_out.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Check-out
+                            </label>
+                            {{ form.check_out }}
+                            {% if form.check_out.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.check_out.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Guests -->
+                    <div class="mb-6">
+                        <label for="{{ form.guests.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Number of Guests (Max: {{ listing.guests }})
+                        </label>
+                        {{ form.guests }}
+                        {% if form.guests.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.guests.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Special Requests -->
+                    <div class="mb-6">
+                        <label for="{{ form.special_requests.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Special Requests
+                        </label>
+                        {{ form.special_requests }}
+                        {% if form.special_requests.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.special_requests.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div id="price-breakdown" class="mb-6 p-4 bg-gray-50 rounded-lg" style="display: none;">
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>${{ listing.price_per_night }} × <span id="nights-count">0</span> nights</span>
+                                <span id="subtotal">$0</span>
+                            </div>
+                            <div class="border-t pt-2">
+                                <div class="flex justify-between font-semibold">
+                                    <span>Total</span>
+                                    <span id="total-price">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="mb-4 p-3 bg-red-100 border border-red-300 rounded-md">
+                            {% for error in form.non_field_errors %}
+                                <p class="text-red-600 text-sm">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Availability Check -->
+                    <div id="availability-message" class="mb-4" style="display: none;"></div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submit-booking" 
+                            class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Book Now
+                    </button>
+                </form>
+            </div>
+
+            <!-- Booking Policies -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">Booking Policies</h3>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        Free cancellation before check-in
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        Instant booking confirmation
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                        24/7 customer support
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mr-2 mt-1"></i>
+                        Check-in time: 3:00 PM - 9:00 PM
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mr-2 mt-1"></i>
+                        Check-out time: Before 11:00 AM
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkInInput = document.getElementById('{{ form.check_in.id_for_label }}');
+    const checkOutInput = document.getElementById('{{ form.check_out.id_for_label }}');
+    const priceBreakdown = document.getElementById('price-breakdown');
+    const availabilityMessage = document.getElementById('availability-message');
+    const submitButton = document.getElementById('submit-booking');
+    
+    function updateMinCheckOut() {
+        if (checkInInput.value) {
+            const checkInDate = new Date(checkInInput.value);
+            checkInDate.setDate(checkInDate.getDate() + 1);
+            checkOutInput.min = checkInDate.toISOString().split('T')[0];
+        }
+    }
+    
+    function calculatePrice() {
+        if (checkInInput.value && checkOutInput.value) {
+            const checkIn = new Date(checkInInput.value);
+            const checkOut = new Date(checkOutInput.value);
+            const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            
+            if (nights > 0) {
+                const pricePerNight = {{ listing.price_per_night }};
+                const subtotal = nights * pricePerNight;
+                
+                document.getElementById('nights-count').textContent = nights;
+                document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+                document.getElementById('total-price').textContent = '$' + subtotal.toFixed(2);
+                priceBreakdown.style.display = 'block';
+                
+                checkAvailability();
+            } else {
+                priceBreakdown.style.display = 'none';
+            }
+        } else {
+            priceBreakdown.style.display = 'none';
+        }
+    }
+    
+    function checkAvailability() {
+        if (checkInInput.value && checkOutInput.value) {
+            fetch(`{% url 'bookings:check_availability' %}?listing_id={{ listing.id }}&check_in=${checkInInput.value}&check_out=${checkOutInput.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    availabilityMessage.style.display = 'block';
+                    if (data.available) {
+                        availabilityMessage.innerHTML = '<div class="p-3 bg-green-100 border border-green-300 rounded-md"><p class="text-green-600 text-sm"><i class="fas fa-check mr-2"></i>Available for your dates!</p></div>';
+                        submitButton.disabled = false;
+                    } else {
+                        availabilityMessage.innerHTML = '<div class="p-3 bg-red-100 border border-red-300 rounded-md"><p class="text-red-600 text-sm"><i class="fas fa-times mr-2"></i>' + data.message + '</p></div>';
+                        submitButton.disabled = true;
+                    }
+                });
+        }
+    }
+    
+    checkInInput.addEventListener('change', function() {
+        updateMinCheckOut();
+        calculatePrice();
+    });
+    
+    checkOutInput.addEventListener('change', calculatePrice);
+    
+    // Initial setup
+    updateMinCheckOut();
+    calculatePrice();
+});
+</script>
+{% endblock %}

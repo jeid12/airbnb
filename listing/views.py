@@ -4,6 +4,7 @@ from .decolarator import host_required, property_access_required
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import Q
+from django.utils import timezone
 
 from .forms import ListingForm
 from .models import Listing
@@ -185,7 +186,8 @@ class ListingView(View):
             
             context = {
                 'listing': listing,
-                'related_listings': related_listings
+                'related_listings': related_listings,
+                'today_date': timezone.now().date()
             }
             return render(request, 'listings/detail.html', context)
 

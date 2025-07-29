@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-6">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+            <li><a href="{% url 'listing:home' %}" class="hover:text-blue-600">Home</a></li>
+            <li>/</li>
+            <li><a href="{% url 'bookings:my_bookings' %}" class="hover:text-blue-600">My Bookings</a></li>
+            <li>/</li>
+            <li><a href="{% url 'bookings:booking_detail' booking_id=booking.id %}" class="hover:text-blue-600">{{ booking.booking_reference }}</a></li>
+            <li>/</li>
+            <li class="text-gray-900">Confirmation</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-green-600 to-green-700 text-white p-8 text-center">
+            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold mb-2">Booking Confirmed!</h1>
+            <p class="text-green-100">Your reservation has been successfully created</p>
+        </div>
+
+        <div class="p-8">
+            <!-- Booking Summary -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-6 text-center">Booking Summary</h2>
+                
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold">{{ booking.listing.title }}</h3>
+                        <span class="text-lg font-bold text-green-600">{{ booking.booking_reference }}</span>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Location:</span>
+                                    <span class="text-gray-900">{{ booking.listing.location }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Check-in:</span>
+                                    <span class="text-gray-900">{{ booking.check_in|date:"F d, Y" }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Check-out:</span>
+                                    <span class="text-gray-900">{{ booking.check_out|date:"F d, Y" }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Duration:</span>
+                                    <span class="text-gray-900">{{ booking.nights }} night{{ booking.nights|pluralize }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Guests:</span>
+                                    <span class="text-gray-900">{{ booking.guests }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Price per night:</span>
+                                    <span class="text-gray-900">${{ booking.listing.price_per_night }}</span>
+                                </div>
+                                <div class="border-t pt-3">
+                                    <div class="flex justify-between text-lg font-bold">
+                                        <span>Total Amount:</span>
+                                        <span class="text-green-600">${{ booking.total_price }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Next Steps</h3>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <span class="text-sm font-bold">1</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-blue-900">Complete Payment</h4>
+                                <p class="text-blue-700 text-sm">Proceed to secure payment to confirm your booking.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <span class="text-sm font-bold">2</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-blue-900">Receive Confirmation</h4>
+                                <p class="text-blue-700 text-sm">You'll receive an email confirmation with check-in details.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <span class="text-sm font-bold">3</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-blue-900">Contact Your Host</h4>
+                                <p class="text-blue-700 text-sm">Connect with your host for check-in instructions and local tips.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Host Information -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Your Host</h3>
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center space-x-4">
+                        {% if booking.listing.host.profile_picture %}
+                            <img src="{{ booking.listing.host.profile_picture.url }}" alt="{{ booking.listing.host.username }}" 
+                                 class="w-16 h-16 rounded-full object-cover">
+                        {% else %}
+                            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600 text-xl"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="font-semibold text-gray-900">{{ booking.listing.host.first_name|default:booking.listing.host.username }}</h4>
+                            <p class="text-gray-600 text-sm">Host since {{ booking.listing.host.date_joined|date:"Y" }}</p>
+                            <a href="mailto:{{ booking.listing.host.email }}" 
+                               class="text-blue-600 hover:text-blue-800 text-sm">
+                                <i class="fas fa-envelope mr-1"></i>Contact Host
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Special Requests -->
+            {% if booking.special_requests %}
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-4">Your Special Requests</h3>
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <p class="text-gray-700">{{ booking.special_requests }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                {% if booking.status == 'pending' %}
+                    <button class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i class="fas fa-credit-card mr-2"></i>Proceed to Payment
+                    </button>
+                {% endif %}
+                
+                <a href="{% url 'bookings:booking_detail' booking_id=booking.id %}" 
+                   class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-center">
+                    <i class="fas fa-eye mr-2"></i>View Booking Details
+                </a>
+                
+                <a href="{% url 'bookings:my_bookings' %}" 
+                   class="bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-center">
+                    <i class="fas fa-list mr-2"></i>View All Bookings
+                </a>
+            </div>
+
+            <!-- Important Information -->
+            <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <h4 class="font-semibold text-yellow-900 mb-3">
+                    <i class="fas fa-info-circle mr-2"></i>Important Information
+                </h4>
+                <ul class="text-yellow-800 text-sm space-y-2">
+                    <li>• Your booking is currently pending payment confirmation</li>
+                    <li>• Check-in time is typically 3:00 PM - 9:00 PM</li>
+                    <li>• Check-out time is before 11:00 AM</li>
+                    <li>• You can cancel this booking free of charge before check-in</li>
+                    <li>• Please contact your host if you have any questions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

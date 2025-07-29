@@ -179,30 +179,128 @@
           <p class="text-gray-500">per night</p>
         </div>
         
-        <div class="space-y-4 mb-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
-            <input type="date" title="Check-in date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+        <form id="booking-preview-form" class="space-y-4 mb-6">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
+              <input type="date" id="preview-checkin" title="Check-in date" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                     min="{{ today_date|date:'Y-m-d' }}">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
+              <input type="date" id="preview-checkout" title="Check-out date" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                     min="{{ today_date|date:'Y-m-d' }}">
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
-            <input type="date" title="Check-out date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-          </div>
+          
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Guests</label>
-            <select title="Number of guests" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+            <select id="preview-guests" title="Number of guests" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
               {% for i in "123456789"|make_list %}
-                <option value="{{ i }}">{{ i }} guest{{ i|pluralize }}</option>
+                {% if i|add:0 <= listing.guests %}
+                  <option value="{{ i }}" {% if i == "1" %}selected{% endif %}>{{ i }} guest{{ i|pluralize }}</option>
+                {% endif %}
               {% endfor %}
             </select>
           </div>
+        </form>
+        
+        <!-- Price Breakdown (Hidden initially) -->
+        <div id="price-breakdown" class="mb-4 p-3 bg-gray-50 rounded-lg hidden">
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span>${{ listing.price_per_night }} × <span id="nights-display">0</span> nights</span>
+              <span id="subtotal-display">$0</span>
+            </div>
+            <div class="border-t pt-2">
+              <div class="flex justify-between font-semibold">
+                <span>Total before taxes</span>
+                <span id="total-display">$0</span>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <a href="#" class="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition duration-200 text-center block font-semibold">
-          Book Now
-        </a>
+        <!-- Availability Status -->
+        <div id="availability-status" class="mb-4 hidden">
+          <div id="available-message" class="p-3 bg-green-50 border border-green-200 rounded-lg hidden">
+            <p class="text-green-700 text-sm">
+              <i class="fas fa-check-circle mr-2"></i>Available for your dates!
+            </p>
+          </div>
+          <div id="unavailable-message" class="p-3 bg-red-50 border border-red-200 rounded-lg hidden">
+            <p class="text-red-700 text-sm">
+              <i class="fas fa-exclamation-circle mr-2"></i>Not available for selected dates
+            </p>
+          </div>
+          <div id="loading-message" class="p-3 bg-blue-50 border border-blue-200 rounded-lg hidden">
+            <p class="text-blue-700 text-sm">
+              <i class="fas fa-spinner fa-spin mr-2"></i>Checking availability...
+            </p>
+          </div>
+        </div>
+        
+        <button id="book-now-btn" 
+                onclick="proceedToBooking()" 
+                class="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition duration-200 text-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+          Check Availability
+        </button>
         
         <p class="text-center text-sm text-gray-500 mt-3">You won't be charged yet</p>
+        
+        <!-- Quick booking stats -->
+        <div class="mt-4 pt-4 border-t text-center">
+          <div class="flex justify-center space-x-6 text-sm text-gray-600">
+            <div class="flex items-center">
+              <i class="fas fa-medal text-yellow-500 mr-1"></i>
+              <span>Superhost</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-door-open text-green-500 mr-1"></i>
+              <span>Self check-in</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-calendar-check text-blue-500 mr-1"></i>
+              <span>Free cancellation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% elif user.is_authenticated and user.role == 'host' and user == listing.host %}
+      <!-- Host owns this property -->
+      <div class="bg-blue-50 rounded-lg border border-blue-200 p-6 mb-6">
+        <div class="text-center">
+          <i class="fas fa-home text-blue-500 text-3xl mb-3"></i>
+          <h3 class="text-lg font-semibold text-blue-900 mb-2">This is your listing</h3>
+          <p class="text-blue-700 text-sm mb-4">Guests will see the booking widget here</p>
+          <a href="{% url 'bookings:host_bookings' %}" 
+             class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 text-sm font-medium">
+            <i class="fas fa-calendar-alt mr-2"></i>View Bookings
+          </a>
+        </div>
+      </div>
+      {% elif not user.is_authenticated %}
+      <!-- Not logged in -->
+      <div class="bg-gray-50 rounded-lg border p-6 mb-6">
+        <div class="text-center">
+          <i class="fas fa-user-plus text-gray-400 text-3xl mb-3"></i>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Ready to book?</h3>
+          <p class="text-gray-600 text-sm mb-4">Sign up or log in to start booking amazing places</p>
+          <div class="space-y-2">
+            <a href="{% url 'accounts:register' %}" 
+               class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200 text-center block font-medium">
+              Sign Up
+            </a>
+            <a href="{% url 'accounts:login' %}" 
+               class="w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition duration-200 text-center block font-medium">
+              Log In
+            </a>
+          </div>
+        </div>
       </div>
       {% endif %}
 
@@ -304,7 +402,7 @@
     
     <!-- Show More Button -->
     <div class="text-center mt-8">
-      <a href="{% url 'listings:search' %}?q={{ listing.location|urlencode }}" 
+      <a href="{% url 'listing:search' %}?q={{ listing.location|urlencode }}" 
          class="inline-flex items-center px-6 py-3 border border-gray-900 text-base font-medium rounded-lg text-gray-900 bg-white hover:bg-gray-50 transition duration-200">
         Show more places to stay
         <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,4 +413,185 @@
   </div>
   {% endif %}
 </div>
+
+<!-- Booking Widget JavaScript -->
+{% if user.is_authenticated and user.role == 'guest' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkinInput = document.getElementById('preview-checkin');
+    const checkoutInput = document.getElementById('preview-checkout');
+    const guestsSelect = document.getElementById('preview-guests');
+    const bookBtn = document.getElementById('book-now-btn');
+    const priceBreakdown = document.getElementById('price-breakdown');
+    const availabilityStatus = document.getElementById('availability-status');
+    const nightsDisplay = document.getElementById('nights-display');
+    const subtotalDisplay = document.getElementById('subtotal-display');
+    const totalDisplay = document.getElementById('total-display');
+    const availableMessage = document.getElementById('available-message');
+    const unavailableMessage = document.getElementById('unavailable-message');
+    const loadingMessage = document.getElementById('loading-message');
+    
+    const pricePerNight = {{ listing.price_per_night }};
+    let isAvailable = false;
+    let totalPrice = 0;
+    let nights = 0;
+    
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    checkinInput.setAttribute('min', today);
+    checkoutInput.setAttribute('min', today);
+    
+    function updateMinCheckout() {
+        if (checkinInput.value) {
+            const checkinDate = new Date(checkinInput.value);
+            checkinDate.setDate(checkinDate.getDate() + 1);
+            checkoutInput.setAttribute('min', checkinDate.toISOString().split('T')[0]);
+            
+            // Clear checkout if it's now invalid
+            if (checkoutInput.value && checkoutInput.value <= checkinInput.value) {
+                checkoutInput.value = '';
+            }
+        }
+    }
+    
+    function calculatePrice() {
+        if (checkinInput.value && checkoutInput.value) {
+            const checkin = new Date(checkinInput.value);
+            const checkout = new Date(checkoutInput.value);
+            nights = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+            
+            if (nights > 0) {
+                totalPrice = nights * pricePerNight;
+                nightsDisplay.textContent = nights;
+                subtotalDisplay.textContent = '$' + totalPrice.toFixed(2);
+                totalDisplay.textContent = '$' + totalPrice.toFixed(2);
+                priceBreakdown.classList.remove('hidden');
+                
+                checkAvailability();
+            } else {
+                priceBreakdown.classList.add('hidden');
+                hideAvailabilityStatus();
+                bookBtn.disabled = true;
+                bookBtn.textContent = 'Check Availability';
+            }
+        } else {
+            priceBreakdown.classList.add('hidden');
+            hideAvailabilityStatus();
+            bookBtn.disabled = true;
+            bookBtn.textContent = 'Check Availability';
+        }
+    }
+    
+    function hideAvailabilityStatus() {
+        availableMessage.classList.add('hidden');
+        unavailableMessage.classList.add('hidden');
+        loadingMessage.classList.add('hidden');
+        availabilityStatus.classList.add('hidden');
+    }
+    
+    function showLoading() {
+        hideAvailabilityStatus();
+        loadingMessage.classList.remove('hidden');
+        availabilityStatus.classList.remove('hidden');
+        bookBtn.disabled = true;
+        bookBtn.textContent = 'Checking...';
+    }
+    
+    function checkAvailability() {
+        if (checkinInput.value && checkoutInput.value && nights > 0) {
+            showLoading();
+            
+            fetch(`{% url 'bookings:check_availability' %}?listing_id={{ listing.id }}&check_in=${checkinInput.value}&check_out=${checkoutInput.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    hideAvailabilityStatus();
+                    availabilityStatus.classList.remove('hidden');
+                    
+                    if (data.available) {
+                        availableMessage.classList.remove('hidden');
+                        bookBtn.disabled = false;
+                        bookBtn.textContent = 'Reserve';
+                        bookBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        bookBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                        isAvailable = true;
+                    } else {
+                        unavailableMessage.classList.remove('hidden');
+                        bookBtn.disabled = true;
+                        bookBtn.textContent = 'Not Available';
+                        bookBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        bookBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        isAvailable = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking availability:', error);
+                    hideAvailabilityStatus();
+                    bookBtn.disabled = true;
+                    bookBtn.textContent = 'Error - Try Again';
+                });
+        }
+    }
+    
+    // Event listeners
+    checkinInput.addEventListener('change', function() {
+        updateMinCheckout();
+        calculatePrice();
+    });
+    
+    checkoutInput.addEventListener('change', calculatePrice);
+    guestsSelect.addEventListener('change', calculatePrice);
+    
+    // Initialize
+    updateMinCheckout();
+});
+
+function proceedToBooking() {
+    const checkin = document.getElementById('preview-checkin').value;
+    const checkout = document.getElementById('preview-checkout').value;
+    const guests = document.getElementById('preview-guests').value;
+    
+    if (!checkin || !checkout || !guests) {
+        alert('Please select your check-in date, check-out date, and number of guests.');
+        return;
+    }
+    
+    // Create a form and submit with the selected dates
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "bookings:create_booking" listing_id=listing.id %}';
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken.value;
+        form.appendChild(csrfInput);
+    }
+    
+    // Add form data
+    const checkinInput = document.createElement('input');
+    checkinInput.type = 'hidden';
+    checkinInput.name = 'check_in';
+    checkinInput.value = checkin;
+    form.appendChild(checkinInput);
+    
+    const checkoutInput = document.createElement('input');
+    checkoutInput.type = 'hidden';
+    checkoutInput.name = 'check_out';
+    checkoutInput.value = checkout;
+    form.appendChild(checkoutInput);
+    
+    const guestsInput = document.createElement('input');
+    guestsInput.type = 'hidden';
+    guestsInput.name = 'guests';
+    guestsInput.value = guests;
+    form.appendChild(guestsInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endif %}
 {% endblock %}
