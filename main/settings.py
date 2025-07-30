@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -143,3 +144,14 @@ MEDIA_ROOT = BASE_DIR / 'media'       # Directory where uploaded files will be s
 PAYPAL_CLIENT_ID = 'ATbQxcTyww2PSjKN1cz4bSTNX44zCArxGplF4RPVuh3qODTm_HIk6fQjYzHOr_MTlAZVHdL2GYDinE22'
 PAYPAL_CLIENT_SECRET = 'EPbNc_2CQUce10Lo4BLTVY31v16ae8LDdk2K-gb129G7A4IM5fgyH3JdamKpHYrfJKeTMeHHE-AP--Ks' 
 PAYPAL_SANDBOX_URL = 'https://sandbox.paypal.com'
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Kodesha",
+    "site_header": "Kodesha",
+    "welcome_sign": "Welcome to kodesha admin pannel",
+    "site_brand": "Kodesha",
+    "copyright": "Kodesha",
+    "search_model": ["accounts.User", "auth.Group", "bookings.Bookings","bookings.payments", "listing.Listings", "reviews.Reviews"],
+    "show_ui_builder": True,  # Show UI builder for customizing appearance
+}
+# Customizing the admin interface
