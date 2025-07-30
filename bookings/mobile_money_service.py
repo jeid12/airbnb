@@ -308,13 +308,18 @@ class MobileMoneyManager:
         # Remove any spaces or special characters
         clean_number = ''.join(filter(str.isdigit, mobile_number))
         
-        # Rwanda mobile numbers are typically 10 digits starting with 7
-        if len(clean_number) == 10 and clean_number.startswith('7'):
-            return f"25{clean_number}"  # Add country code
-        elif len(clean_number) == 12 and clean_number.startswith('25'):
+        # Rwanda mobile numbers can be:
+        # - 9 digits starting with 7 (780123456)
+        # - 10 digits starting with 07 (0780123456) 
+        # - 12 digits starting with 250 (250780123456)
+        if len(clean_number) == 9 and clean_number.startswith('7'):
+            return f"250{clean_number}"  # Add country code
+        elif len(clean_number) == 10 and clean_number.startswith('07'):
+            return f"25{clean_number[1:]}"  # Remove 0 and add country code 
+        elif len(clean_number) == 12 and clean_number.startswith('250'):
             return clean_number
         else:
-            raise MobileMoneyError("Invalid mobile number format. Please use format: 0780123456 or 250780123456")
+            raise MobileMoneyError("Invalid mobile number format. Please use format: 780123456, 0780123456, or 250780123456")
     
     def get_currency_display(self, amount, currency='RWF'):
         """Format currency display"""

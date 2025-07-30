@@ -182,9 +182,9 @@
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <span class="text-gray-500 text-sm">+250</span>
                                         </div>
-                                        <input type="tel" id="mobile-number" class="block w-full pl-12 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="780123456" maxlength="9">
+                                        <input type="tel" id="mobile-number" class="block w-full pl-12 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="780123456" maxlength="10">
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-1">Enter your Rwanda mobile number (format: 780123456)</p>
+                                    <p class="text-xs text-gray-500 mt-1">Enter your Rwanda mobile number (format: 780123456 or 0780123456)</p>
                                 </div>
                                 <button id="initiate-mobile-payment" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg">
                                     <i class="fas fa-mobile-alt mr-2"></i>
@@ -342,8 +342,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Validate mobile number format
-        if (!/^7\d{8}$/.test(mobileNumber)) {
-            alert('Please enter a valid Rwanda mobile number (format: 780123456)');
+        if (!/^(0?7\d{8}|7\d{8})$/.test(mobileNumber)) {
+            alert('Please enter a valid Rwanda mobile number (format: 780123456 or 0780123456)');
             return;
         }
 
