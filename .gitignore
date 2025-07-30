@@ -6,3 +6,4 @@ db.sqlite3
 hintrinc/
 *.log
 *.pot
+accounts/management/
