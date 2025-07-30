@@ -145,6 +145,25 @@ PAYPAL_CLIENT_ID = 'ATbQxcTyww2PSjKN1cz4bSTNX44zCArxGplF4RPVuh3qODTm_HIk6fQjYzHO
 PAYPAL_CLIENT_SECRET = 'EPbNc_2CQUce10Lo4BLTVY31v16ae8LDdk2K-gb129G7A4IM5fgyH3JdamKpHYrfJKeTMeHHE-AP--Ks' 
 PAYPAL_SANDBOX_URL = 'https://sandbox.paypal.com'
 
+# Mobile Money Configuration (Rwanda)
+# MTN Mobile Money
+MTN_API_USER = 'sandbox'
+MTN_API_KEY = 'sandbox_key'
+MTN_SUBSCRIPTION_KEY = 'test_key'
+MTN_BASE_URL = 'https://sandbox.momodeveloper.mtn.com'
+MTN_ENVIRONMENT = 'sandbox'
+
+# Airtel Money
+AIRTEL_CLIENT_ID = 'sandbox_client'
+AIRTEL_CLIENT_SECRET = 'sandbox_secret'
+AIRTEL_BASE_URL = 'https://openapi.airtel.africa'
+AIRTEL_ENVIRONMENT = 'sandbox'
+
+# Currency Settings
+DEFAULT_CURRENCY = 'USD'
+SUPPORTED_CURRENCIES = ['USD', 'RWF']
+USD_TO_RWF_RATE = 1300  # Approximate exchange rate - use real-time rates in production
+
 JAZZMIN_SETTINGS = {
     "site_title": "Kodesha",
     "site_header": "Kodesha",

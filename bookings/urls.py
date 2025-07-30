@@ -17,6 +17,11 @@ urlpatterns = [
     path('payment/success/<int:booking_id>/', payment_views.payment_success, name='payment_success'),
     path('payment/cancel/<int:booking_id>/', payment_views.payment_cancel, name='payment_cancel'),
     
+    # Mobile Money URLs
+    path('payment/mobile-money/initiate/', payment_views.initiate_mobile_money_payment, name='initiate_mobile_money'),
+    path('payment/mobile-money/status/', payment_views.check_mobile_money_status, name='check_mobile_money_status'),
+    path('payment/mobile-money/success/<int:payment_id>/', payment_views.mobile_money_success, name='mobile_money_success'),
+    
     # Booking management
     path('my-bookings/', views.my_bookings, name='my_bookings'),
     path('host-bookings/', views.host_bookings, name='host_bookings'),

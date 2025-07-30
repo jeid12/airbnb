@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.conf import settings
 from decimal import Decimal
 from .models import Booking, Payment
+from .mobile_money_service import MobileMoneyManager, MobileMoneyError
 
 # PayPal Settings for Development
 PAYPAL_CLIENT_ID = getattr(settings, 'PAYPAL_CLIENT_ID', 'test')
@@ -38,7 +39,7 @@ def get_paypal_access_token():
 
 @login_required
 def payment_page(request, booking_id):
-    """Display payment page with PayPal integration"""
+    """Display payment page with PayPal and Mobile Money integration"""
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     
     # Check if booking is valid for payment
@@ -56,10 +57,16 @@ def payment_page(request, booking_id):
         }
     )
     
+    # Calculate amount in RWF for mobile money
+    mobile_money_manager = MobileMoneyManager()
+    amount_rwf = int(booking.total_price * 1300)  # Simple conversion - use real rates in production
+    
     context = {
         'booking': booking,
         'payment': payment,
         'paypal_client_id': PAYPAL_CLIENT_ID,
+        'amount_usd': booking.total_price,
+        'amount_rwf': amount_rwf,
         'title': f'Payment for {booking.booking_reference}'
     }
     
@@ -211,3 +218,143 @@ def payment_cancel(request, booking_id):
     
     messages.info(request, 'Payment was cancelled. You can try again when ready.')
     return redirect('bookings:booking_detail', booking_id=booking_id)
+
+
+@csrf_exempt
+@require_POST
+def initiate_mobile_money_payment(request):
+    """Initiate mobile money payment"""
+    try:
+        data = json.loads(request.body)
+        booking_id = data.get('booking_id')
+        payment_method = data.get('payment_method')  # 'mtn_momo' or 'airtel_money'
+        mobile_number = data.get('mobile_number')
+        
+        # Validate required fields
+        if not all([booking_id, payment_method, mobile_number]):
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        
+        if payment_method not in ['mtn_momo', 'airtel_money']:
+            return JsonResponse({'error': 'Invalid payment method'}, status=400)
+        
+        booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+        
+        # Get or update payment record
+        payment, created = Payment.objects.get_or_create(
+            booking=booking,
+            defaults={
+                'amount': booking.total_price,
+                'currency': 'RWF',
+                'payment_method': payment_method
+            }
+        )
+        
+        # Update payment method and mobile number
+        payment.payment_method = payment_method
+        payment.mobile_number = mobile_number
+        payment.currency = 'RWF'
+        payment.amount = payment.get_amount_in_rwf()  # Convert to RWF
+        
+        # Initialize mobile money manager
+        mobile_money_manager = MobileMoneyManager()
+        
+        try:
+            # Validate mobile number
+            validated_number = mobile_money_manager.validate_mobile_number(mobile_number, payment_method)
+            payment.mobile_number = validated_number
+            
+            # Request payment
+            result = mobile_money_manager.request_payment(
+                payment_method=payment_method,
+                amount=payment.amount,
+                mobile_number=validated_number,
+                external_reference=booking.booking_reference,
+                description=f"Payment for {booking.listing.title}"
+            )
+            
+            # Update payment record with reference
+            payment.mobile_money_reference = result['reference_id']
+            payment.payment_id = result['reference_id']
+            payment.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': result['message'],
+                'reference_id': result['reference_id'],
+                'payment_id': payment.id
+            })
+            
+        except MobileMoneyError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def check_mobile_money_status(request):
+    """Check mobile money payment status"""
+    try:
+        data = json.loads(request.body)
+        payment_id = data.get('payment_id')
+        
+        if not payment_id:
+            return JsonResponse({'error': 'Payment ID required'}, status=400)
+        
+        payment = get_object_or_404(Payment, id=payment_id, booking__user=request.user)
+        
+        if not payment.is_mobile_money:
+            return JsonResponse({'error': 'Not a mobile money payment'}, status=400)
+        
+        mobile_money_manager = MobileMoneyManager()
+        
+        try:
+            status_result = mobile_money_manager.check_payment_status(
+                payment_method=payment.payment_method,
+                reference_id=payment.mobile_money_reference
+            )
+            
+            # Update payment based on status
+            if status_result['status'] == 'SUCCESSFUL':
+                payment.mark_completed(
+                    transaction_id=status_result.get('transaction_id'),
+                    mobile_money_ref=status_result.get('reference_id')
+                )
+                return JsonResponse({
+                    'status': 'completed',
+                    'message': 'Payment completed successfully!',
+                    'transaction_id': status_result.get('transaction_id')
+                })
+            elif status_result['status'] == 'FAILED':
+                payment.mark_failed()
+                return JsonResponse({
+                    'status': 'failed',
+                    'message': 'Payment failed. Please try again.',
+                    'reason': status_result.get('reason', 'Unknown error')
+                })
+            else:  # PENDING
+                return JsonResponse({
+                    'status': 'pending',
+                    'message': 'Payment is still being processed. Please wait...'
+                })
+                
+        except MobileMoneyError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def mobile_money_success(request, payment_id):
+    """Handle successful mobile money payment"""
+    payment = get_object_or_404(Payment, id=payment_id, booking__user=request.user)
+    booking = payment.booking
+    
+    if payment.status == 'completed':
+        messages.success(request, f'Payment completed successfully! Your booking {booking.booking_reference} has been confirmed.')
+    else:
+        messages.info(request, 'Payment is being processed. You will receive a confirmation shortly.')
+    
+    return redirect('bookings:booking_detail', booking_id=booking.id)

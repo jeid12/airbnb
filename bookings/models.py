@@ -24,6 +24,8 @@ PAYMENT_METHOD_CHOICES = [
     ('paypal', 'PayPal'),
     ('stripe', 'Stripe'),
     ('credit_card', 'Credit Card'),
+    ('mtn_momo', 'MTN Mobile Money'),
+    ('airtel_money', 'Airtel Money'),
 ]
 
 class Booking(models.Model):
@@ -169,19 +171,29 @@ class Payment(models.Model):
     payer_email = models.EmailField(blank=True, null=True)
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
     
+    # Mobile Money specific fields
+    mobile_number = models.CharField(max_length=20, blank=True, null=True, help_text="Mobile number for mobile money payments")
+    mobile_money_transaction_id = models.CharField(max_length=100, blank=True, null=True)
+    mobile_money_reference = models.CharField(max_length=100, blank=True, null=True)
+    
     class Meta:
         ordering = ['-created_at']
     
     def __str__(self):
         return f"Payment {self.payment_id or 'PENDING'} for {self.booking.booking_reference}"
     
-    def mark_completed(self, transaction_id=None, payer_email=None):
+    def mark_completed(self, transaction_id=None, payer_email=None, mobile_money_ref=None):
         """Mark payment as completed and update booking status"""
         self.status = 'completed'
         if transaction_id:
-            self.transaction_id = transaction_id
+            if self.payment_method in ['mtn_momo', 'airtel_money']:
+                self.mobile_money_transaction_id = transaction_id
+            else:
+                self.transaction_id = transaction_id
         if payer_email:
             self.payer_email = payer_email
+        if mobile_money_ref:
+            self.mobile_money_reference = mobile_money_ref
         self.save()
         
         # Update booking status to confirmed
@@ -191,3 +203,16 @@ class Payment(models.Model):
         """Mark payment as failed"""
         self.status = 'failed'
         self.save()
+    
+    @property
+    def is_mobile_money(self):
+        """Check if payment method is mobile money"""
+        return self.payment_method in ['mtn_momo', 'airtel_money']
+    
+    def get_amount_in_rwf(self):
+        """Convert amount to RWF for mobile money payments"""
+        if self.currency == 'RWF':
+            return self.amount
+        # Simple conversion rate - in production, use real-time rates
+        usd_to_rwf_rate = 1300  # Approximate rate
+        return self.amount * usd_to_rwf_rate if self.currency == 'USD' else self.amount
